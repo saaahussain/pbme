@@ -1,0 +1,10 @@
+mode,variant,episodes,task_success_rate,policy_accuracy,simulator_policy_agreement,exact_decision_agreement,selected_tool_agreement,released_field_agreement,field_rewrite_accuracy,response_filter_accuracy,audit_completeness,mean_exposure_cost,mean_latency_ms
+full_registry,adversarial_smuggling,300,1.0,1.0,1.0,1.0,1.0,1.0,,1.0,1.0,5.6,0.2034
+full_registry,clean,300,1.0,1.0,1.0,1.0,1.0,1.0,,1.0,1.0,5.6,0.1951
+full_registry,overbroad_fields,300,1.0,1.0,1.0,1.0,1.0,1.0,,1.0,1.0,5.6,0.1973
+full_registry,safer_tool_available,300,1.0,1.0,1.0,1.0,1.0,1.0,,1.0,1.0,5.6,0.1525
+full_registry,wrong_purpose,300,1.0,1.0,1.0,1.0,1.0,1.0,,,1.0,0.0,0.1568
+raw_only,adversarial_smuggling,300,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6.45,0.1454
+raw_only,overbroad_fields,300,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6.45,0.1626
+raw_only,safer_tool_available,300,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6.45,0.1628
+raw_only,wrong_purpose,300,1.0,1.0,1.0,1.0,1.0,1.0,,,1.0,0.0,0.112

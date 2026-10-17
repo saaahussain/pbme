@@ -1,0 +1,9 @@
+mode,domain,episodes,task_success_rate,policy_accuracy,simulator_policy_agreement,exact_decision_agreement,selected_tool_agreement,released_field_agreement,field_rewrite_accuracy,response_filter_accuracy,audit_completeness,mean_exposure_cost,mean_latency_ms
+full_registry,documents,375,1.0,1.0,1.0,1.0,1.0,1.0,,1.0,1.0,3.68,0.1712
+full_registry,finance,375,1.0,1.0,1.0,1.0,1.0,1.0,,1.0,1.0,4.8,0.1674
+full_registry,hr,375,1.0,1.0,1.0,1.0,1.0,1.0,,1.0,1.0,3.04,0.1912
+full_registry,support,375,1.0,1.0,1.0,1.0,1.0,1.0,,1.0,1.0,6.4,0.1943
+raw_only,documents,300,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,3.6,0.1327
+raw_only,finance,300,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,5.55,0.1627
+raw_only,hr,300,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,4.35,0.1466
+raw_only,support,300,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,5.85,0.1409

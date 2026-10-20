@@ -18,6 +18,8 @@ success?
   for the approved purpose.
 - **H5:** The implemented `PBMEBroker` realizes the same policy decisions as
   the controlled simulator.
+- **H6:** PBME improves policy-conformant task execution and reduces unnecessary
+  disclosure when tool calls are proposed by a real LLM under a neutral prompt.
 
 ## Evaluation track E1 — policy simulation
 
@@ -66,11 +68,17 @@ Two modes are evaluated:
 A backend over-return field is intentionally injected during E2 so response
 filter correctness is directly observable.
 
-## Evaluation track E3 — model behavior (future/optional)
+## Evaluation track E3 — real LLM paired evaluation
 
-A separate LLM-in-the-loop experiment can ask real models to select tools and
-arguments. E3 should not be conflated with E1 or E2 because model planning
-error and enforcement-policy error are different research questions.
+E3 uses the frozen 200-scenario dataset in `benchmark/e3/scenarios.jsonl`. For
+each scenario/model/repeat, one real LLM proposal is generated and replayed
+through both direct execution and PBME. The LLM receives the same user task,
+additional scenario content, and executable tool schemas in both conditions.
+
+E3 should not be conflated with E1 or E2 because model planning error and
+enforcement-policy error are different research questions. The paired design
+controls proposal-level sampling variation by reusing the exact same tool call
+for `llm_direct` and `llm_pbme`.
 
 ## Metrics
 
@@ -112,8 +120,19 @@ Tool Minimization Rate rather than field count alone.
 
 ### Tool Minimization Rate (TMR)
 
-Percentage of episodes with a lower-exposure alternative in which the system
-selects/reroutes to that safer tool.
+Percentage of eligible tool-minimization opportunities in which the system
+selects/reroutes to the lower-exposure task-compatible tool. `raw_only` episodes
+have no eligible alternative and therefore no TMR denominator.
+
+### Reroute Rate
+
+Fraction of all episodes in which PBME executes a different tool from the tool
+proposed by the model. This is reported separately from TMR.
+
+### Forbidden Field Release Rate (FFRR)
+
+Fraction of episodes that release at least one field forbidden by the benchmark
+policy, regardless of whether the scenario is classified as adversarial.
 
 ### Attack Success Rate (ASR)
 
@@ -179,5 +198,7 @@ Current benchmark coverage includes:
 - intentionally over-returning backends in broker validation
 - signed-context tampering and expiry unit tests
 
-Future E3 work should additionally cover indirect prompt injection, malicious
-tool descriptions, cross-tool exfiltration, and model-generated field smuggling.
+E3 currently includes indirect-prompt-injection scenarios and model-generated
+over-broad or scope-changing tool proposals. Future work should additionally cover
+malicious tool descriptions, cross-tool exfiltration, covert channels, and independently
+authored external attack benchmarks.

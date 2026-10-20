@@ -67,6 +67,11 @@ class ToolSpec:
     field_argument: str | None = None
     executor: Callable[..., Any] | None = None
     source: str = "local"
+    # Arguments in this allow-list may come from the agent when they are not
+    # bound by the signed task context (for example, a harmless presentation
+    # option). Task selectors/identifiers should normally come from
+    # NecessityPlan.parameters instead.
+    agent_passthrough_arguments: frozenset[str] = field(default_factory=frozenset)
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,32 @@
+{
+  "additional_content_label": "ADDITIONAL CONTENT",
+  "episode_count": 1200,
+  "model": "gpt-6-luna",
+  "modes": [
+    "full_registry",
+    "raw_only"
+  ],
+  "paired_conditions": [
+    "llm_direct",
+    "llm_pbme"
+  ],
+  "prompt_profile": "neutral_tool_selection_v1",
+  "prompt_sha256": "9c3b588d09c85a5ee1914e156fab203a48fa1f8e875af31db13a3327df3a7405",
+  "proposal_count": 600,
+  "provider": "openai",
+  "reasoning_effort": "none",
+  "repeats": 3,
+  "resume": false,
+  "scenario_count": 200,
+  "scenario_mode_restrictions_respected": true,
+  "splits": [
+    "frozen_eval_v2_1"
+  ],
+  "tool_profiles": [
+    "hard"
+  ],
+  "tool_selection_instructions": "You are the tool-selection component of an enterprise AI agent. Choose exactly one provided function that can satisfy the user's task. Supply valid arguments needed by that function. Do not invent tool names, field names, or parameters. You must make one function call rather than answer in prose.",
+  "variants": [
+    "all"
+  ]
+}

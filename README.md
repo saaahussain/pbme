@@ -560,79 +560,142 @@ A production deployment should integrate:
 
 ## Current validation status
 
-The current implementation validates:
+The current implementation validates three complementary evaluation tracks:
 
-- multi-domain capability verification;
-- host-signed task context;
-- host-bound task parameters;
-- deterministic necessity planning;
-- purpose enforcement;
-- deny auditing;
-- tool minimization;
-- record-granularity penalties;
-- field minimization;
-- backend over-return filtering;
-- structured audit generation;
-- 500 benchmark scenarios;
-- 9,000 E1 policy-simulation episodes;
-- 2,700 E2 broker-validation episodes;
-- domain and variant breakdowns;
-- PBME-Field vs PBME-Full ablation reporting;
-- 19 automated tests.
+- **E1 — controlled policy simulation:** 500 scenarios, six policy configurations,
+  and three deterministic repetitions (9,000 episodes).
+- **E2 — PBMEBroker conformance validation:** 2,700 executions through the actual
+  broker pipeline, including tool selection, request rewriting, response filtering,
+  and auditing.
+- **E3 — real-LLM paired evaluation:** a frozen 200-scenario benchmark in which one
+  real LLM proposal per scenario/repeat is replayed through both `llm_direct` and
+  `llm_pbme`.
+
+E3 keeps the LLM outside the trusted authorization boundary. The model proposes a
+structured tool call; PBME independently verifies the signed task, minimizes fields
+or tools where appropriate, binds trusted task arguments, filters the response, and
+records the enforcement decision.
 
 ---
-
-
 
 ## Current limitations
 
-PBME has not yet been evaluated with real LLM agents in the loop.
+The evaluation still uses synthetic enterprise-style records, controlled tool
+schemas, deterministic benchmark ground truth, and local tool implementations.
+E3 measures real LLM **tool-proposal behavior**, but it is not a production
+conversational-agent deployment study and does not establish robustness for arbitrary
+remote MCP servers, enterprise identity systems, or open-domain workflows.
 
-The current experiments use:
-
-- synthetic enterprise-style datasets;
-- controlled tool schemas;
-- deterministic benchmark ground truth;
-- deterministic task planning for E2;
-- local SQLite-backed tool implementations.
-
-The next research stage will evaluate:
-
-```text
-User Task
-   |
-   v
-Real LLM Agent
-   |
-   v
-Proposed Tool Call
-   |
-   v
-PBMEBroker
-   |
-   v
-Tool / Backend
-   |
-   v
-Response Filter
-   |
-   v
-LLM Final Answer
-```
-
-This will allow measurement of real-model over-broad requests, tool selection, prompt-injection behavior, task success, token overhead, and exposure reduction.
+The current E3 benchmark is primarily single-step. Multi-step workflows in which
+identifiers or intermediate values become necessary for downstream calls remain
+future work.
 
 ---
 
+## E3 — frozen real-LLM benchmark
 
+The active public benchmark is simply **E3**. It contains 200 scenarios across HR,
+support, finance, and enterprise-document domains and separates **task-bound tool
+arguments** from **returned data fields**.
+
+This distinction matters for identifiers. A `customer_id`, `invoice_id`, or
+`document_id` may be necessary to select the authorized record without needing to be
+returned as part of the backend projection. PBME does not replace enterprise IDs with
+PBME-specific handles. Required identifiers are preserved; unrelated, unnecessary,
+or unauthorized data are minimized according to the verified task.
+
+Generate the frozen E3 dataset:
+
+```bash
+pbme-benchmark generate-e3
+```
+
+Run a smoke test:
+
+```bash
+pbme-benchmark llm-run \
+  --scenarios benchmark/e3/scenarios.jsonl \
+  --model gpt-6-luna \
+  --repeats 1 \
+  --limit 10 \
+  --out-dir benchmark/llm_results/smoke
+```
+
+Run the complete 200-scenario validation:
+
+```bash
+pbme-benchmark llm-run \
+  --scenarios benchmark/e3/scenarios.jsonl \
+  --model gpt-6-luna \
+  --repeats 1 \
+  --out-dir benchmark/llm_results/validation_gpt6_luna_r1
+```
+
+E3 also supports OpenRouter through its OpenAI-compatible Chat Completions tool-calling path. The PBME benchmark, neutral prompt text, function names/descriptions/JSON Schemas, and downstream evaluation are unchanged; the OpenRouter adapter only converts the frozen function definitions into the Chat Completions transport envelope. Set the key first:
+
+```powershell
+$env:OPENROUTER_API_KEY="YOUR_KEY"
+```
+
+For a small OpenRouter smoke test, omit provider-specific reasoning controls unless the selected model documents support for them:
+
+```bash
+pbme-benchmark llm-run \
+  --provider openrouter \
+  --model <openrouter-model-slug> \
+  --reasoning-effort omit \
+  --repeats 1 \
+  --limit 10 \
+  --out-dir benchmark/llm_results/openrouter_smoke
+```
+
+For paper-facing runs, pin the upstream provider and disable provider fallback so routing cannot silently change during the experiment:
+
+```bash
+pbme-benchmark llm-run \
+  --provider openrouter \
+  --model <openrouter-model-slug> \
+  --reasoning-effort omit \
+  --openrouter-provider <provider-slug> \
+  --disable-provider-fallbacks \
+  --openrouter-require-parameters \
+  --repeats 3 \
+  --no-resume \
+  --out-dir benchmark/llm_results/final_<model>_r3
+```
+
+The requested OpenRouter route, fallback setting, Chat Completions transport, base URL, prompt hash, and reasoning configuration are written to `run_config.json`. The adapter does not send `parallel_tool_calls`; instead, the frozen prompt requires exactly one function call and the adapter rejects any response containing zero or multiple tool calls. OpenRouter routing metadata is enabled; the selected upstream provider and routing region are stored with each proposal when returned by the gateway, and `summary.json` includes upstream-provider counts.
+
+Each scenario has one frozen tool mode, yielding 100 `full_registry` and 100
+`raw_only` proposals per model/repeat. Every proposal is replayed through the paired
+`llm_direct` and `llm_pbme` conditions.
+
+The LLM uses the neutral prompt profile `neutral_tool_selection_v1`. Each run records
+the exact prompt SHA-256, model, reasoning effort, scenario count, and other
+reproducibility metadata in `run_config.json`.
+
+For trace compatibility, scenario IDs retain the historical `E3V21-*` prefix and the
+internal split string remains `frozen_eval_v2_1`. These are stable artifact identifiers,
+not separate active benchmark versions. See `benchmark/e3/README.md` for details.
+
+E3 reports scenario success separately from task completion. Correct expected denials
+count as scenario/policy success while task completion is N/A for those episodes.
+The evaluation also reports exposure cost, UDAR, forbidden-field release rate (FFRR),
+request transformation rate, reroute rate, and opportunity-conditioned tool
+minimization rate (TMR).
+
+Install the LLM dependency with:
+
+```bash
+pip install -e ".[llm,dev]"
+```
+
+See [`docs/LLM_EVALUATION.md`](docs/LLM_EVALUATION.md) for the experimental design,
+metric semantics, output schema, cache/resume behavior, and interpretation limits.
 
 ## Research question
 
-> Can a runtime enforcement layer automatically reduce agent-visible information to the minimum required for a host-authorized task while preserving task success?
+> Can a runtime enforcement layer automatically reduce agent-visible information to
+> the minimum required for a host-authorized task while preserving task success?
 
-See:
-
-```text
-docs/RESEARCH_DESIGN.md
-```
-
+See `docs/RESEARCH_DESIGN.md` for the full study design.

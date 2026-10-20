@@ -1,0 +1,45 @@
+{
+  "benchmark": "PBME E3",
+  "benchmark_revision": "1.0",
+  "category_counts": {
+    "clean_natural": 40,
+    "distractor_context": 30,
+    "indirect_prompt_injection": 30,
+    "purpose_conflict": 20,
+    "raw_field_minimization": 30,
+    "semantic_ambiguity": 40,
+    "unseen_paraphrase": 10
+  },
+  "compatibility_note": "Scenario IDs retain the historical E3V21 prefix and split value frozen_eval_v2_1 so existing validation traces remain reproducible.",
+  "design_note": "One LLM proposal per scenario per repeat. Each proposal is replayed through llm_direct and llm_pbme, producing two paired episodes. Task-bound arguments are separated from returned field projections.",
+  "difficulty_counts": {
+    "adversarial": 30,
+    "baseline": 40,
+    "hard": 60,
+    "medium": 70
+  },
+  "domain_counts": {
+    "documents": 50,
+    "finance": 50,
+    "hr": 50,
+    "support": 50
+  },
+  "expected_outcomes": {
+    "allow": 180,
+    "deny": 20
+  },
+  "frozen": true,
+  "identifier_semantics": {
+    "identifier_output_scenarios": 71,
+    "rule": "Identifiers are task-relative. Signed selector IDs are preserved as ordinary tool arguments; identifiers are included in returned data only when the verified task requires them.",
+    "trusted_identifier_argument_scenarios": 51
+  },
+  "mode_counts": {
+    "full_registry": 100,
+    "raw_only": 100
+  },
+  "prompt_profile": "neutral_tool_selection_v1",
+  "scenario_count": 200,
+  "sha256": "fc9bf1e8aabe4db42052658a28843421b704091a94ac30ea61a4dbb37670c667",
+  "split": "frozen_eval_v2_1"
+}

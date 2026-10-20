@@ -105,7 +105,16 @@ def derive_answer(
         if cap in {"shipping_lookup", "email_lookup"}:
             cid = p["customer_id"]
             key = "shipping_address" if cap == "shipping_lookup" else "email"
-            return _normalize([{"customer_id": r["customer_id"], key: r[key]} for r in rows if r["customer_id"] == cid])
+            # In E3 customer_id may be used only as a trusted selector
+            # argument and omitted from the raw projection. Reconstruct the
+            # answer with the already-known signed selector rather than forcing
+            # the backend to disclose the same identifier again. Older datasets
+            # that project customer_id continue to work as well.
+            return _normalize([
+                {"customer_id": r.get("customer_id", cid), key: r[key]}
+                for r in rows
+                if r.get("customer_id", cid) == cid
+            ])
 
         if cap == "spend_by_category":
             totals = {}
@@ -128,7 +137,16 @@ def derive_answer(
 
         if cap == "audit_invoice_lookup":
             invoice = p["invoice_id"]
-            return _normalize([{"invoice_id": r["invoice_id"], "transaction_id": r["transaction_id"], "amount": r["amount"], "merchant": r["merchant"]} for r in rows if r["invoice_id"] == invoice])
+            return _normalize([
+                {
+                    "invoice_id": r.get("invoice_id", invoice),
+                    "transaction_id": r["transaction_id"],
+                    "amount": r["amount"],
+                    "merchant": r["merchant"],
+                }
+                for r in rows
+                if r.get("invoice_id", invoice) == invoice
+            ])
 
         if cap == "count_by_department":
             counts = {}
@@ -146,11 +164,26 @@ def derive_answer(
 
         if cap == "legal_secret_lookup":
             did = p["document_id"]
-            return _normalize([{"document_id": r["document_id"], "secret_code": r["secret_code"]} for r in rows if r["document_id"] == did])
+            return _normalize([
+                {
+                    "document_id": r.get("document_id", did),
+                    "secret_code": r["secret_code"],
+                }
+                for r in rows
+                if r.get("document_id", did) == did
+            ])
 
         if cap == "document_text_lookup":
             did = p["document_id"]
-            return _normalize([{"document_id": r["document_id"], "page_number": r["page_number"], "text": r["text"]} for r in rows if r["document_id"] == did])
+            return _normalize([
+                {
+                    "document_id": r.get("document_id", did),
+                    "page_number": r["page_number"],
+                    "text": r["text"],
+                }
+                for r in rows
+                if r.get("document_id", did) == did
+            ])
 
     except KeyError:
         return None

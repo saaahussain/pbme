@@ -31,5 +31,6 @@ Full-registry mode: **1,500 episodes**. Raw-only mode: **1,200 episodes**. Total
 
 - E1 supports controlled claims about relative policy behavior under fixed synthetic ground truth.
 - E2 supports the claim that the implemented broker realizes the simulated PBME policy in these environments.
-- Neither evaluation shows how a real LLM chooses tools or behaves under naturalistic prompt injection. That is a separate E3 experiment.
+- E1 and E2 do not measure real-model proposal behavior; that question is evaluated separately in E3.
+- The current E3 validation artifacts are stored under `benchmark/llm_results/validation_gpt6_luna_r1/`; final paper-facing multi-model results will be frozen separately.
 - In-process latency values are useful for regression comparison only; they are not production MCP/network latency.

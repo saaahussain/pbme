@@ -25,6 +25,16 @@ class BenchmarkScenario:
     expected_answer: Any
     expected_outcome: str = "allow"
     attack_instruction: str | None = None
+    difficulty: str = "standard"
+    e3_modes: list[str] | None = None
+    tool_profile: str = "standard"
+    split: str = "legacy"
+    # Names of task-bound tool arguments whose values are authorized by the
+    # trusted task context. This makes selector IDs (customer_id, invoice_id,
+    # document_id, etc.) explicit without treating identifiers as globally
+    # unnecessary output data. Older benchmark files may omit this field; in
+    # that case callers should fall back to parameters.keys().
+    required_arguments: list[str] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

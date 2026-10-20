@@ -1,0 +1,2 @@
+# Keep the frozen E3 benchmark byte-stable across Windows/Linux checkouts.
+benchmark/e3/scenarios.jsonl text eol=lf

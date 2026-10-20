@@ -1,62 +1,36 @@
 # PBME Evaluation Harness
 
-This repository contains two deliberately separate evaluation tracks.
+PBME uses three complementary evaluation tracks. They intentionally answer different
+questions and should not be merged into one undifferentiated benchmark.
 
 ## E1 — Controlled policy simulation
 
-The generator creates:
+E1 evaluates six policy strategies under deterministic benchmark ground truth.
 
 - 4 domains
 - 25 base tasks per domain
-- 100 base tasks total
+- 100 base tasks
 - 5 variants per base task
-- 500 scenarios total
+- 500 scenarios
+- 6 systems
+- 3 deterministic repetitions
+- 9,000 episodes
 
-Systems:
-
-1. `permissive`
-2. `rbac_only`
-3. `static_masking`
-4. `ares_like`
-5. `pbme_field`
-6. `pbme_full`
-
-With three repeats:
-
-```text
-500 scenarios × 6 systems × 3 repeats = 9,000 episodes
-```
-
-Generate and run:
+Run:
 
 ```bash
 pbme-benchmark generate
 pbme-benchmark run --repeats 3
 ```
 
-Outputs:
+Outputs are written under `benchmark/results/`.
 
-```text
-benchmark/results/
-  episodes.jsonl
-  episodes.csv
-  summary.json
-  reports/
-    domain_breakdown.csv
-    variant_breakdown.csv
-    domain_variant_breakdown.csv
-    ablation_breakdown.csv
-    ... matching JSON files
-```
+E1 does not invoke a real LLM and does not execute the production broker path. It
+isolates policy behavior under identical controlled ground truth.
 
-The policy simulation does **not** invoke `PBMEBroker`. It isolates the
-behavior of the six evaluation policies under identical deterministic ground
-truth.
+## E2 — PBMEBroker conformance validation
 
-## E2 — Real PBMEBroker integration validation
-
-The broker runner executes the same scenario definitions through the actual
-pipeline:
+E2 executes benchmark tasks through the actual broker pipeline:
 
 ```text
 signed TaskContext
@@ -65,9 +39,9 @@ signed TaskContext
     -> governance policy
     -> tool optimizer
     -> RequestRewriter
-    -> actual SQLite backend
+    -> backend
     -> ResponseFilter
-    -> JsonlAuditLog
+    -> audit log
 ```
 
 Run:
@@ -76,60 +50,96 @@ Run:
 pbme-benchmark broker-run --repeats 3
 ```
 
-Two modes are used:
-
-- `full_registry` — all safe aggregate tools are available; validates tool
-  minimization and rerouting.
-- `raw_only` — only the domain raw-record tool is available; forces field
-  projection and validates request rewriting.
-
-The broker validation also injects one intentional undeclared field into
-backend responses. Correct execution requires the real `ResponseFilter` to
-remove it before the result reaches the caller.
-
-With the full 500 scenarios and three repeats, the default run produces:
+The default full evaluation produces 2,700 broker executions:
 
 ```text
-full_registry: 500 × 3 = 1,500 episodes
-raw_only:      400 × 3 = 1,200 episodes
----------------------------------------
-total:                    2,700 episodes
+full_registry: 500 x 3 = 1,500
+raw_only:      400 x 3 = 1,200
+--------------------------------
+total:                    2,700
 ```
 
-`raw_only` skips clean scenarios whose proposed tool is already a safe
-aggregate tool.
+Outputs are written under `benchmark/broker_results/`.
 
-Outputs:
+E2 establishes implementation conformance within the controlled task family. It is
+not an open-domain semantic-planning benchmark.
+
+## E3 — Real-LLM paired evaluation
+
+E3 is the active frozen real-LLM benchmark. Its canonical dataset is:
 
 ```text
-benchmark/broker_results/
-  broker_episodes.jsonl
-  broker_episodes.csv
-  broker_summary.json
-  broker_domain_breakdown.csv
-  broker_variant_breakdown.csv
+benchmark/e3/scenarios.jsonl
+benchmark/e3/manifest.json
 ```
 
-Broker metrics include:
+Generate it with:
 
-- task success
-- expected-policy accuracy
-- simulator/broker allow-deny agreement
-- exact decision agreement
-- selected-tool agreement
-- released-field agreement
-- field-rewrite accuracy
-- response-filter accuracy
-- audit completeness
+```bash
+pbme-benchmark generate-e3
+```
+
+Each E3 scenario is assigned exactly one tool mode. Across the 200 scenarios there are
+100 `full_registry` and 100 `raw_only` cases. For each model/repeat, the LLM generates
+one structured proposal per scenario. The exact same proposal is then replayed through:
+
+```text
+same LLM proposal
+      /      \
+     v        v
+llm_direct  llm_pbme
+```
+
+This paired design prevents model sampling differences from being mistaken for PBME's
+effect.
+
+Run:
+
+```bash
+pbme-benchmark llm-run \
+  --scenarios benchmark/e3/scenarios.jsonl \
+  --model gpt-6-luna \
+  --repeats 1 \
+  --out-dir benchmark/llm_results/validation_gpt6_luna_r1
+```
+
+E3 reports proposal behavior and paired execution outcomes, including:
+
+- scenario success
+- task completion on expected-allow scenarios
+- policy success
 - exposure cost
-- broker latency
+- unnecessary data access rate (UDAR)
+- forbidden field release rate (FFRR)
+- attack success rate (ASR)
+- false denial rate (FDR)
+- request transformation rate
+- reroute rate
+- tool minimization rate (TMR) over eligible opportunities
+- model token counts and latency
+
+For TMR, the denominator is only episodes where a lower-exposure task-compatible
+alternative actually exists. `raw_only` episodes therefore have no TMR denominator.
+Reroute rate is reported separately over all episodes.
+
+The E3 dataset uses task-relative identifier semantics: signed selector IDs are
+preserved as normal tool arguments, while returned field projections are minimized
+independently. PBME does not mint or translate enterprise identifiers.
+
+For compatibility with already-created traces, scenario IDs retain the historical
+`E3V21-*` prefix and the split string remains `frozen_eval_v2_1`. The repository has
+one active E3 benchmark; these strings are stable artifact identifiers, not active
+version names.
+
+See `benchmark/e3/README.md` and `docs/LLM_EVALUATION.md` for details.
 
 ## Ground truth
 
-Every JSONL scenario contains:
+Scenario JSONL records include benchmark ground truth such as:
 
-- `required_fields` — minimum raw fields when a raw-record tool is necessary
-- `safe_output_fields` — minimum agent-visible fields for the preferred safe tool
+- `required_arguments`
+- `required_fields`
+- `safe_output_fields`
 - `optional_fields`
 - `forbidden_fields`
 - `preferred_tool`
@@ -137,34 +147,5 @@ Every JSONL scenario contains:
 - `expected_answer`
 - `expected_outcome`
 
-The ground truth is deterministic and generated from the domain specification,
-not judged by the system under test.
-
-## Variants
-
-- `clean`
-- `overbroad_fields`
-- `safer_tool_available`
-- `wrong_purpose`
-- `adversarial_smuggling`
-
-## Reporting
-
-Regenerate paper-facing reports from an existing episode file:
-
-```bash
-pbme-benchmark report \
-  --episodes benchmark/results/episodes.jsonl \
-  --out-dir benchmark/results/reports
-```
-
-The ablation report compares `pbme_field` with `pbme_full` overall and
-by domain/variant.
-
-## Interpretation boundary
-
-E1 is a **controlled policy simulation**. E2 proves that the implemented broker
-realizes those policies in the synthetic environments. Neither E1 nor E2 is an
-LLM-in-the-loop benchmark: capability ground truth and task schemas are
-controlled by the benchmark. Claims about real model tool-selection behavior
-require a separate E3 model experiment.
+These fields are used by deterministic evaluation and PBME verification as appropriate;
+they are not supplied to the E3 LLM as hidden hints.

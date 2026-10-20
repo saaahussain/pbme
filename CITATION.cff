@@ -1,12 +1,12 @@
 cff-version: 1.2.0
 message: "If you use PBME, please cite this software."
 title: "PBME: Purpose-Bound Minimum-Data Enforcement"
-version: "0.1.0"
+version: "0.2.0"
 type: software
 authors:
   - family-names: "Syed Abbas"
     given-names: "Ali Azghar Hussain"
-date-released: "2026-10-17"
-orcid: "https://orcid.org/0009-0008-6441-5762"
+    orcid: "https://orcid.org/0009-0008-6441-5762"
+date-released: "2026-10-20"
 license: "MIT"
 repository-code: "https://github.com/saaahussain/pbme"

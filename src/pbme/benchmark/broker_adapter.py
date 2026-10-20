@@ -46,8 +46,11 @@ def _placeholders(template: str) -> set[str]:
 
 def capability_specs_for_domain(
     spec: DomainSpec,
+    *,
+    required_field_overrides: Mapping[str, tuple[str, ...]] | None = None,
 ) -> dict[str, CapabilitySpec]:
     result: dict[str, CapabilitySpec] = {}
+    required_field_overrides = dict(required_field_overrides or {})
     for name, cap in spec.capabilities.items():
         trigger_terms = set(_tokens(name.replace("_", " ")))
         required_parameters: set[str] = set()
@@ -58,7 +61,9 @@ def capability_specs_for_domain(
             name=name,
             description=" / ".join(cap.goal_templates),
             trigger_terms=frozenset(trigger_terms),
-            required_raw_fields=tuple(cap.required_fields),
+            required_raw_fields=tuple(
+                required_field_overrides.get(name, cap.required_fields)
+            ),
             safe_output_fields=tuple(cap.safe_output_fields),
             required_parameters=tuple(sorted(required_parameters)),
             supports_year="year" in required_parameters,
@@ -176,6 +181,7 @@ def build_benchmark_broker(
     secret: str,
     mode: str = "full_registry",
     injected_over_return_field: str | None = None,
+    required_field_overrides: Mapping[str, tuple[str, ...]] | None = None,
 ) -> tuple[PBMEBroker, TaskContextSigner, DomainRuntime]:
     if mode not in {"full_registry", "raw_only"}:
         raise ValueError(f"Unknown broker validation mode: {mode}")
@@ -183,7 +189,10 @@ def build_benchmark_broker(
     runtime = DomainRuntime(spec)
     catalog = GovernanceCatalog(spec.field_policies)
     registry = ToolRegistry()
-    capabilities = capability_specs_for_domain(spec)
+    capabilities = capability_specs_for_domain(
+        spec,
+        required_field_overrides=required_field_overrides,
+    )
 
     all_parameter_names = {
         key

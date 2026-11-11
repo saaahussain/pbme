@@ -1,0 +1,23 @@
+[
+  {
+    "run": "final_gemini37_flash_r3",
+    "executions": 1200,
+    "mismatch_rows": 0,
+    "seconds": 0.73,
+    "non_timing_fields_compared": 40
+  },
+  {
+    "run": "final_gpt6_luna_r3",
+    "executions": 1200,
+    "mismatch_rows": 0,
+    "seconds": 0.7,
+    "non_timing_fields_compared": 40
+  },
+  {
+    "run": "final_llama33_70b_akash_r3",
+    "executions": 1200,
+    "mismatch_rows": 0,
+    "seconds": 0.81,
+    "non_timing_fields_compared": 40
+  }
+]

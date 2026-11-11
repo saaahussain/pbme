@@ -1,2 +1,10 @@
 # Keep the frozen E3 benchmark byte-stable across Windows/Linux checkouts.
 benchmark/e3/scenarios.jsonl text eol=lf
+
+# Keep archived reproducibility files byte-stable for checksum verification.
+benchmark/offline_results/v0.3.0/*.csv text eol=lf
+benchmark/offline_results/v0.3.0/*.json text eol=lf
+benchmark/offline_results/v0.3.0/*.md text eol=lf
+benchmark/offline_results/v0.3.0/*.py text eol=lf
+benchmark/offline_results/v0.3.0/SHA256SUMS text eol=lf
+benchmark/offline_results/v0.3.0/*.gz -text

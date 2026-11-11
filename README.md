@@ -699,3 +699,7 @@ metric semantics, output schema, cache/resume behavior, and interpretation limit
 > the minimum required for a host-authorized task while preserving task success?
 
 See `docs/RESEARCH_DESIGN.md` for the full study design.
+
+## Offline reproducibility studies (v0.3.0)
+
+The [offline study artifact](benchmark/offline_results/v0.3.0/README.md) contains sensitivity summaries, compressed execution records, experiment settings, checksums, and commands for reproducing and verifying the results.

@@ -9,11 +9,9 @@ from .registry import ToolRegistry
 
 
 class PlanVerifier:
-    """Deterministically verifies a candidate necessity plan.
+    """Check a necessity plan against the supplied capability registry.
 
-    The trusted capability ontology is injectable. This is important for
-    validating the *real* broker across multiple domains rather than hard-wiring
-    verification to the demonstration HR ontology.
+    The registry is passed in so each domain can use its own definitions.
     """
 
     def __init__(

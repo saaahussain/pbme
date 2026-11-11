@@ -390,10 +390,7 @@ def _common_result(
     denied = decision == "deny"
     expected_deny = scenario.expected_outcome == "deny"
     if not proposal_record.proposal_valid:
-        # A malformed/absent tool proposal is a model-level failure, not a PBME
-        # allow/deny decision. Count it as unsuccessful in both paired arms so
-        # malformed responses cannot be silently excluded or make PBME look
-        # artificially successful.
+        # An invalid proposal is unsuccessful in both arms.
         policy_success = False
         false_denial = False
     else:
@@ -1005,8 +1002,8 @@ def run_llm_evaluation(
         "resume": resume,
     }
 
-    # Paper-facing LLM adapters can expose prompt/reasoning metadata without
-    # making those fields mandatory for test doubles or third-party proposers.
+    # Optional adapters can add prompt and reasoning fields.
+    # Test doubles are not required to provide them.
     metadata_fn = getattr(proposer, "evaluation_metadata", None)
     if callable(metadata_fn):
         config.update(metadata_fn())

@@ -220,9 +220,8 @@ def write_results(
         encoding="utf-8",
     )
 
-    # Paper-facing breakdowns: domain, variant, domain×variant, and the
-    # PBME-Field vs PBME-Full ablation. Imported lazily to avoid a
-    # reporting/runner import cycle.
+    # Domain, variant, domain-by-variant, and ablation reports.
+    # Imported lazily to avoid a reporting/runner import cycle.
     from .reporting import write_breakdown_reports
     write_breakdown_reports(results, out / "reports")
     return summary

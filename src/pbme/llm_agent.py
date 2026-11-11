@@ -177,12 +177,7 @@ class OpenAIResponsesToolProposer:
         return None
 
     def evaluation_metadata(self) -> dict[str, Any]:
-        """Return reproducibility metadata for paper-facing E3 runs.
-
-        This metadata is written to run_config.json by the benchmark runner so
-        an archived result records the exact neutral instruction profile used
-        to obtain the LLM tool proposals.
-        """
+        """Return the prompt and model settings written to run_config.json."""
 
         instructions = self._instructions()
         return {

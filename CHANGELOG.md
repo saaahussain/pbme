@@ -16,6 +16,10 @@
 - Added per-proposal OpenRouter upstream-provider/region capture and aggregate provider counts for auditable auto-routing.
 - Added `.gitattributes` to keep the frozen E3 JSONL byte-stable (`eol=lf`) across Windows and Linux checkouts.
 
+## 0.3.0 — Offline reproducibility studies
+
+- Add a harness to replay archived E3 proposals and run exposure-weight and registry-metadata sensitivity studies offline.
+
 ## 0.2.0 — Canonical E3 benchmark and real-LLM evaluation
 
 - Added the canonical frozen 200-scenario E3 benchmark across HR, support, finance, and enterprise documents.
